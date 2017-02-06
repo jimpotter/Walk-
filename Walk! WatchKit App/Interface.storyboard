@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder.WatchKit.Storyboard" version="3.0" toolsVersion="11762" systemVersion="15G1217" targetRuntime="watchKit" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="AgC-eL-Hgc">
+    <device id="watch38" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="watchOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBWatchKitPlugin" version="11508"/>
+    </dependencies>
+    <scenes>
+        <!--Walk!-->
+        <scene sceneID="aou-V4-d1y">
+            <objects>
+                <controller title="Walk!" id="AgC-eL-Hgc" customClass="InterfaceController" customModule="Walk__WatchKit_App" customModuleProvider="target">
+                    <items>
+                        <label width="136" height="55" alignment="left" text="Steps" textAlignment="center" id="hGU-UY-m4B">
+                            <color key="textColor" red="0.8414644282" green="0.080666533169999999" blue="0.001474143975" alpha="1" colorSpace="calibratedRGB"/>
+                            <fontDescription key="font" type="boldSystem" pointSize="50"/>
+                        </label>
+                        <label width="136" height="30" alignment="left" text="Feet" textAlignment="center" id="txO-7D-r9K">
+                            <fontDescription key="font" type="boldSystem" pointSize="30"/>
+                        </label>
+                        <label width="136" height="30" alignment="left" text="Meters" textAlignment="center" id="4Lr-80-fMf">
+                            <fontDescription key="font" type="boldSystem" pointSize="30"/>
+                        </label>
+                        <label width="136" height="30" alignment="left" text="Miles" textAlignment="center" id="kIf-Jb-sDt">
+                            <fontDescription key="font" type="boldSystem" pointSize="30"/>
+                        </label>
+                    </items>
+                    <connections>
+                        <outlet property="feetLabel" destination="txO-7D-r9K" id="CVF-bw-94k"/>
+                        <outlet property="metersLabel" destination="4Lr-80-fMf" id="het-GY-Z5B"/>
+                        <outlet property="milesLabel" destination="kIf-Jb-sDt" id="vRv-va-uZi"/>
+                        <outlet property="stepsLabel" destination="hGU-UY-m4B" id="DOP-Cp-9Vm"/>
+                        <segue destination="qBB-Yk-YYa" kind="relationship" relationship="nextPage" id="9NY-0v-vcF"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="220" y="345"/>
+        </scene>
+        <!--Walk!-->
+        <scene sceneID="YtB-BH-RJo">
+            <objects>
+                <controller identifier="StepCountBarChartController" title="Walk!" id="qBB-Yk-YYa" customClass="StepCountBarChartController" customModule="Walk__WatchKit_Extension">
+                    <items>
+                        <imageView width="136" height="152" alignment="left" id="aoe-Ib-5o2" userLabel="Chart Image"/>
+                    </items>
+                    <connections>
+                        <outlet property="chartImage" destination="aoe-Ib-5o2" id="wLZ-5e-0sM"/>
+                        <segue destination="FM7-hg-NKT" kind="relationship" relationship="nextPage" id="EBM-qd-ddj"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="504" y="342.5"/>
+        </scene>
+        <!--Walk!-->
+        <scene sceneID="yvw-2S-pZa">
+            <objects>
+                <controller identifier="DistanceBarChartController" title="Walk!" id="FM7-hg-NKT" customClass="DistanceBarChartController" customModule="Walk__WatchKit_Extension">
+                    <items>
+                        <imageView width="136" height="152" alignment="left" id="CCf-pU-C27" userLabel="Chart Image"/>
+                    </items>
+                    <connections>
+                        <outlet property="chartImage" destination="CCf-pU-C27" id="Ah2-6R-WBW"/>
+                    </connections>
+                </controller>
+            </objects>
+            <point key="canvasLocation" x="822" y="343"/>
+        </scene>
+    </scenes>
+</document>

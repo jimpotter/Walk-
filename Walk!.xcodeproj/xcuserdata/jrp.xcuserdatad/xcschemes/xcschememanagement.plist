@@ -4,6 +4,11 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Walk WatchKit Extension Tests.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>3</integer>
+		</dict>
 		<key>Walk! WatchKit App (Complication).xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -33,6 +38,11 @@
 			<true/>
 		</dict>
 		<key>174225CD1E4925DE00972AFE</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>174226151E4929D800972AFE</key>
 		<dict>
 			<key>primary</key>
 			<true/>
