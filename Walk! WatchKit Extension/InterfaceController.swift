@@ -9,7 +9,8 @@
 import WatchKit
 import UserNotifications
 
-class InterfaceController: WKInterfaceController, MotionContextDelegate, UNUserNotificationCenterDelegate {
+class InterfaceController: WKInterfaceController {
+    
     @IBOutlet var stepsLabel: WKInterfaceLabel!
     @IBOutlet var feetLabel: WKInterfaceLabel!
     @IBOutlet var metersLabel: WKInterfaceLabel!
@@ -17,12 +18,11 @@ class InterfaceController: WKInterfaceController, MotionContextDelegate, UNUserN
     
     fileprivate var healthKitManager = HealthKitManager()
     fileprivate var motionManager = MotionManager()
-    fileprivate let calendar = NSCalendar.autoupdatingCurrent
-    fileprivate var currentMotionSteps = 0
-    fileprivate var currentMotionDistance = 0.0
+    fileprivate let interfaceControllerHelper = InterfaceControllerHelper()
     fileprivate var didDeactivateDate = Date()
     fileprivate var willActivateDateStamp  = ""
     fileprivate var didDeactivateDateStamp = ""
+    fileprivate var weeklyStepCountMax:Double = 0.0
     
     override func awake(withContext context: Any?) {
         super.awake(withContext: context)
@@ -30,6 +30,9 @@ class InterfaceController: WKInterfaceController, MotionContextDelegate, UNUserN
         motionManager.delegate = self
         self.motionManager.startMonitoring()
         checkHealthKit()
+
+        NotificationCenter.default.addObserver(self, selector: #selector(AppBecomeActive(_:)), name: .becomeActive, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleUpdatedWeeklyStepCountMax(_:)), name: .weeklyStepCountMaxUpdated, object: nil)
     }
     
     // view has activated.
@@ -39,18 +42,18 @@ class InterfaceController: WKInterfaceController, MotionContextDelegate, UNUserN
     // if we happen to have crossed a date boundary just now, call resetCounts()
     override func willActivate() {
         super.willActivate()
-        willActivateDateStamp = getCurrentDateStamp()
-        if didDeactivateDateStamp == getCurrentDateStamp() {
-            print("====>  willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) == currentDateStamp \(getCurrentDateStamp())")
+        willActivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
+        if didDeactivateDateStamp == interfaceControllerHelper.getCurrentDateStamp() {
+            print("====>  willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) == currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp())")
             self.motionManager.queryPedometer(from:didDeactivateDate, to:Date())
         }
         else {
             if didDeactivateDateStamp == "" {
-                print("====>   willActivate: didDeactivateDateStamp blank,      currentDateStamp \(getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+                print("====>   willActivate: didDeactivateDateStamp blank,      currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
                 resetCounts(sendNotification:false)
             }
             else {
-                print("====>   willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) != currentDateStamp \(getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+                print("====>   willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
                 resetCounts()
             }
         }
@@ -63,102 +66,96 @@ class InterfaceController: WKInterfaceController, MotionContextDelegate, UNUserN
     override func didDeactivate() {
         super.didDeactivate()
         didDeactivateDate = Date()
-        didDeactivateDateStamp = getCurrentDateStamp()
+        didDeactivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
         if didDeactivateDateStamp != willActivateDateStamp {
-            print("====>   didDeactivate: willActivateDateStamp \(willActivateDateStamp) != currentDateStamp \(getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+            print("====>   didDeactivate: willActivateDateStamp \(willActivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
             resetCounts()
         }
         print("====> didDeactivate: didDeactivateDateStamp \(didDeactivateDateStamp).")
     }
-    
+}
+
+extension InterfaceController:UNUserNotificationCenterDelegate {
+    func handleUpdatedWeeklyStepCountMax(_ notification: Notification) {
+        guard let userInfo = notification.userInfo, let weeklyStepCountMax  = userInfo[Constant.WeeklyStepCountMax.rawValue] as? Double else { return }
+        
+        print("handleUpdatedWeeklyStepCountMax: weeklyStepCountMax now \(weeklyStepCountMax)")
+        self.weeklyStepCountMax = weeklyStepCountMax
+    }
+
+    internal func AppBecomeActive(_ notification: Notification) {
+        DispatchQueue.main.async {
+            self.becomeCurrentPage()        // return to this view when app becomes active
+        }
+    }
+}
+
+extension InterfaceController:MotionContextDelegate {
+    func didEncounterAuthorizationError(_ manager: MotionManager, error:NSError) {  // we have encountered an authorization error
+        presentAlert("ERROR", message:error.localizedDescription)                   // Present an alert to the user
+    }
+}
+
+extension InterfaceController {
+    func notifyDelegate(_ manager: MotionManager) {    // new Motion data has been received.  Update the view
+        let motionSteps    = manager.recentPedometerData.numberOfSteps.intValue
+        if let motionDistance = manager.recentPedometerData.distance?.doubleValue {
+            updateTheWatchDisplay(motionSteps:motionSteps,
+                                  motionDistance:motionDistance)
+        }
+        else {
+            WKInterfaceDevice.current().play(.failure)
+        }
+    }
+
     //  we are in a new day.
     // zero out today's current value
     // move over stored values in previous days
     // if this is our initial call on launch, sendNotification == false, don't send notification
     // if sendNotification == true, send a local notification to the DistanceModel & StepCountModel
     //    so that they can update their internal counts
-    internal func resetCounts(sendNotification:Bool = true) {
+    fileprivate func resetCounts(sendNotification:Bool = true) {
         if sendNotification == true {
             NotificationCenter.default.post(name: .dayOfWeekUpdated, object: self, userInfo: nil)
         }
         didDeactivateDate = Date()
-        didDeactivateDateStamp = getCurrentDateStamp()
-        currentMotionSteps = 0
-        currentMotionDistance = 0.0
+        didDeactivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
         healthKitManager.healthKitStepCount = 0.0
         healthKitManager.healthKitDistance  = 0.0
-        updateTheWatchDisplay(steps: currentMotionSteps, distance: currentMotionDistance)
+        
+        updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
         checkHealthKit()
     }
     
-    // new Motion data has been received.  Update the view
-    func notifyDelegate(_ manager: MotionManager) {
-        let currentMotionSteps    = manager.recentPedometerData.numberOfSteps.intValue
-        if let currentMotionDistance = manager.recentPedometerData.distance?.doubleValue {
-            updateTheWatchDisplay(steps: currentMotionSteps, distance: currentMotionDistance)
-        }
-        else {
-            WKInterfaceDevice.current().play(.failure)
+    fileprivate func updateTheWatchDisplay(motionSteps:Int, motionDistance:Double) {
+        interfaceControllerHelper.updateTheWatchDisplay(
+            steps: motionSteps, healthKitStepCount: healthKitManager.healthKitStepCount,
+            distance: motionDistance, healthKitDistance: healthKitManager.healthKitDistance,
+            weeklyStepCountMax:self.weeklyStepCountMax) { (stepCount, stepCountColor, feet, meters, miles) -> Void in
+                DispatchQueue.main.async {
+                    self.setStepsLabel(string:String(stepCount), color:stepCountColor)
+                    self.feetLabel.setText(feet)
+                    self.metersLabel.setText(meters)
+                    self.milesLabel.setText(miles)
+                }
         }
     }
     
-    // we have encountered an authorization error.  Present an alert to the user
-    func didEncounterAuthorizationError(_ manager: MotionManager, error:NSError) {
-        presentAlert("ERROR", message:error.localizedDescription)
-    }
-}
-
-extension InterfaceController {
-    // get the current date stamp
-    fileprivate func getCurrentDateStamp (date:Date = Date()) -> String {
-        let shortFormatter = DateFormatter()
-        shortFormatter.setLocalizedDateFormatFromTemplate("yyMMdd")
-        let currentDateStamp = shortFormatter.string(from: date)
-        return currentDateStamp
-    }
-    
-    // update the watch display
-    fileprivate func updateTheWatchDisplay (steps:Int, distance:Double) {
-        let combinedStepCount = Int(steps + Int(healthKitManager.healthKitStepCount))
-        let combinedDistance  = Double(distance + healthKitManager.healthKitDistance)
-        
-        NotificationCenter.default.post(name: .stepCountUpdated, object: self, userInfo: [Constant.StepCount.rawValue:Double(combinedStepCount)])
-        NotificationCenter.default.post(name: .distanceUpdated, object: self, userInfo: [Constant.Distance.rawValue:(combinedDistance / 1609.344)])
-        
-        let feetTraveled = combinedDistance * 3.28084
-        var feetString = String(format:"%.2f FT", feetTraveled)
-        if feetTraveled >= 100.0 {
-            feetString = String(format:"%i FT",  Int(feetTraveled))
-        }
-        
-        var meterString = "meters"
-        switch combinedDistance {
-        case 0..<100:
-            meterString = String(format:"%.2f M", combinedDistance)
-        case 100..<1000:
-            meterString = String(format:"%i M", Int(combinedDistance))
-        default:
-            meterString = String(format:"%.2f KM", combinedDistance / 1000.0)
-        }
-        
-        let milesString = String(format:"%.2f Mi", combinedDistance / 1609.344)
-        DispatchQueue.main.async {
-            self.stepsLabel.setText("\(combinedStepCount)")
-            self.feetLabel.setText(feetString)
-            self.metersLabel.setText(meterString)
-            self.milesLabel.setText(milesString)
-        }
+    fileprivate func setStepsLabel(string:String, color:UIColor) {
+        let attributes = [NSForegroundColorAttributeName : color]
+        let stepsLabelAttributedString = NSAttributedString(string: string, attributes: attributes)
+        self.stepsLabel.setAttributedText(stepsLabelAttributedString)
     }
     
     // query HealthKit for updated values
     fileprivate func checkHealthKit () {
         healthKitManager.retrieveStepCount { (stepCount) -> Void in
             self.healthKitManager.healthKitStepCount = stepCount
-            self.updateTheWatchDisplay(steps: self.currentMotionSteps, distance: self.currentMotionDistance)
+            self.updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
         }
         healthKitManager.retrieveMeterDistance { (distance) -> Void in
             self.healthKitManager.healthKitDistance = distance
-            self.updateTheWatchDisplay(steps: self.currentMotionSteps, distance: self.currentMotionDistance)
+            self.updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
         }
     }
     

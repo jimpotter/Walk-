@@ -21,10 +21,6 @@ struct BarChart {
     internal let labelMarginTop:CGFloat = 5.0
     internal var chartBorderColor = UIColor.white
     
-    internal let topColor     = UIColor(red:  99/255, green: 255/255, blue:  28/255, alpha: 1)
-    internal let middleColor  = UIColor(red: 255/255, green: 167/255, blue:   5/255, alpha: 1)
-    internal let darkRedColor = UIColor(red: 171/255, green:   4/255, blue:   5/255, alpha: 1)
-    
     mutating func drawImage(frame:CGRect, yLabelText:String, yValues:[Double], useIntValues:Bool = true) -> UIImage? {
         UIGraphicsBeginImageContextWithOptions(frame.size, false, 0)
         guard let context = UIGraphicsGetCurrentContext() else { return nil}
@@ -170,7 +166,7 @@ extension BarChart {
     internal mutating func getBarLabelColor(grade:Float, labelPoint:CGPoint, barRect:CGRect, yValueRect:CGRect) -> UIColor {
         var barLabelColor = UIColor.black
         if (0.0..<0.5).contains(grade) {
-            barLabelColor = darkRedColor
+            barLabelColor = UIColor.darkRedColor
         }
         return barLabelColor
     }
@@ -178,11 +174,11 @@ extension BarChart {
     internal func getBarColor(grade:Float) -> UIColor {
         switch grade {
         case 0.0..<0.5:
-            return darkRedColor
+            return UIColor.darkRedColor
         case 0.5..<0.75:
-            return middleColor
+            return UIColor.middleColor
         default:
-            return topColor
+            return UIColor.topColor
         }
     }
     
@@ -220,16 +216,26 @@ extension NSString {
 }
 
 enum Constant: String{
-    case StepCount        = "stepCount"
-    case Distance         = "distance"
-    case WeeklyStepCounts = "weeklyStepCounts"
-    case WeeklyDistance   = "weeklyDistance"
-    case Steps            = "STEPS"
-    case Miles            = "MILES"
+    case WeeklyStepCountMax = "weeklyStepCountMax"
+    case StepCount          = "stepCount"
+    case Distance           = "distance"
+    case WeeklyStepCounts   = "weeklyStepCounts"
+    case WeeklyDistance     = "weeklyDistance"
+    case Steps              = "STEPS"
+    case Miles              = "MILES"
 }
 
 extension Notification.Name {
-    static let stepCountUpdated = Notification.Name(rawValue: "StepCountUpdatedNotification")
-    static let distanceUpdated  = Notification.Name(rawValue: "DistanceUpdatedNotification")
-    static let dayOfWeekUpdated = Notification.Name(rawValue: "DayOfWeekUpdatedNotification")
+    
+    static let weeklyStepCountMaxUpdated = Notification.Name(rawValue: "WeeklyStepCountMaxUpdated")
+    static let stepCountUpdated          = Notification.Name(rawValue: "StepCountUpdatedNotification")
+    static let distanceUpdated           = Notification.Name(rawValue: "DistanceUpdatedNotification")
+    static let dayOfWeekUpdated          = Notification.Name(rawValue: "DayOfWeekUpdatedNotification")
+    static let becomeActive              = Notification.Name(rawValue: "ApplicationDidBecomeActive")    
+}
+
+extension UIColor {
+    static let topColor     = UIColor(red:  99/255, green: 255/255, blue:  28/255, alpha: 1)
+    static let middleColor  = UIColor(red: 255/255, green: 167/255, blue:   5/255, alpha: 1)
+    static let darkRedColor = UIColor(red: 171/255, green:   4/255, blue:   5/255, alpha: 1)
 }

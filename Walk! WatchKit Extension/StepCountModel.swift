@@ -11,10 +11,24 @@ import HealthKit
 class StepCountModel: NSObject {
     fileprivate let healthKitManager = HealthKitManager()
     fileprivate var stepCountBarChartController: StepCountBarChartController
-    
+    var weeklyStepCountMax:Double = 0.0
     var weeklyStepCounts: [Double] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] {
         didSet {
             UserDefaults.standard.set(weeklyStepCounts, forKey: Constant.WeeklyStepCounts.rawValue)
+            
+            let sorted = weeklyStepCounts.sorted(by: { $0 > $1 })
+            if weeklyStepCountMax != sorted[0] {
+                weeklyStepCountMax = sorted[0]
+                
+// fake fake fake
+//                print("weeklyStepCountMax: \(weeklyStepCountMax)")
+//                weeklyStepCountMax = 2500.0
+// fake fake fake
+
+                NotificationCenter.default.post(name: .weeklyStepCountMaxUpdated,
+                                            object: self,
+                                            userInfo: [Constant.WeeklyStepCountMax.rawValue:weeklyStepCountMax])
+            }
         }
     }
     

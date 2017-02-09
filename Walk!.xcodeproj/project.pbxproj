@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		172C4A1D1E4CE74B0059BF2C /* InterfaceControllerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172C4A1C1E4CE74B0059BF2C /* InterfaceControllerHelper.swift */; };
+		172C4A1E1E4CE74B0059BF2C /* InterfaceControllerHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172C4A1C1E4CE74B0059BF2C /* InterfaceControllerHelper.swift */; };
+		172C4A231E4D15170059BF2C /* InterfaceControllerHelperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 172C4A221E4D15170059BF2C /* InterfaceControllerHelperTests.swift */; };
+		172C4A241E4D1AB80059BF2C /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174226071E4929A400972AFE /* HealthKitManager.swift */; };
 		174225B51E4925DE00972AFE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174225B41E4925DE00972AFE /* AppDelegate.swift */; };
 		174225B71E4925DE00972AFE /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 174225B61E4925DE00972AFE /* ViewController.swift */; };
 		174225BA1E4925DE00972AFE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 174225B81E4925DE00972AFE /* Main.storyboard */; };
@@ -76,6 +80,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		172C4A1C1E4CE74B0059BF2C /* InterfaceControllerHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterfaceControllerHelper.swift; sourceTree = "<group>"; };
+		172C4A221E4D15170059BF2C /* InterfaceControllerHelperTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InterfaceControllerHelperTests.swift; sourceTree = "<group>"; };
 		174225B11E4925DE00972AFE /* Walk!.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Walk!.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		174225B41E4925DE00972AFE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		174225B61E4925DE00972AFE /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -188,6 +194,7 @@
 			children = (
 				174226011E49284F00972AFE /* Walk! WatchKit Extension.entitlements */,
 				174225E21E4925DE00972AFE /* InterfaceController.swift */,
+				172C4A1C1E4CE74B0059BF2C /* InterfaceControllerHelper.swift */,
 				174225E41E4925DE00972AFE /* ExtensionDelegate.swift */,
 				174225E61E4925DE00972AFE /* ComplicationController.swift */,
 				174226041E4929A400972AFE /* BarChart.swift */,
@@ -216,6 +223,7 @@
 			isa = PBXGroup;
 			children = (
 				174226181E4929D800972AFE /* BarChartTests.swift */,
+				172C4A221E4D15170059BF2C /* InterfaceControllerHelperTests.swift */,
 				1742261A1E4929D800972AFE /* Info.plist */,
 			);
 			path = "Walk WatchKit Extension Tests";
@@ -415,6 +423,7 @@
 				1742260C1E4929A400972AFE /* DistanceBarChartController.swift in Sources */,
 				174225E31E4925DE00972AFE /* InterfaceController.swift in Sources */,
 				1742260E1E4929A400972AFE /* HealthKitManager.swift in Sources */,
+				172C4A1D1E4CE74B0059BF2C /* InterfaceControllerHelper.swift in Sources */,
 				174225E71E4925DE00972AFE /* ComplicationController.swift in Sources */,
 				174226101E4929A400972AFE /* StepCountBarChartController.swift in Sources */,
 				1742260F1E4929A400972AFE /* MotionManager.swift in Sources */,
@@ -425,8 +434,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				172C4A231E4D15170059BF2C /* InterfaceControllerHelperTests.swift in Sources */,
 				174226201E492A3500972AFE /* BarChart.swift in Sources */,
 				174226191E4929D800972AFE /* BarChartTests.swift in Sources */,
+				172C4A241E4D1AB80059BF2C /* HealthKitManager.swift in Sources */,
+				172C4A1E1E4CE74B0059BF2C /* InterfaceControllerHelper.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -701,6 +713,7 @@
 				174225EF1E4925DE00972AFE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		174225F11E4925DE00972AFE /* Build configuration list for PBXNativeTarget "Walk! WatchKit App" */ = {
 			isa = XCConfigurationList;
@@ -709,6 +722,7 @@
 				174225F31E4925DE00972AFE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		174225F51E4925DE00972AFE /* Build configuration list for PBXNativeTarget "Walk!" */ = {
 			isa = XCConfigurationList;
@@ -717,6 +731,7 @@
 				174225F71E4925DE00972AFE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		1742261B1E4929D800972AFE /* Build configuration list for PBXNativeTarget "Walk WatchKit Extension Tests" */ = {
 			isa = XCConfigurationList;
@@ -725,6 +740,7 @@
 				1742261D1E4929D800972AFE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

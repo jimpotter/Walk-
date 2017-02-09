@@ -91,7 +91,7 @@ class BarChartTests: XCTestCase {
                                                            barRect:barRect,
                                                            yValueRect:barRect)
         
-        XCTAssertEqual(returnedBarLabelColor, chart.darkRedColor)
+        XCTAssertEqual(returnedBarLabelColor, UIColor.darkRedColor)
     }
     
     func testGetBarLabelColor_Black() {
@@ -113,21 +113,21 @@ class BarChartTests: XCTestCase {
         let chart = BarChart()
         let grade:Float = 0.25
         let returnedColor = chart.getBarColor(grade:grade)
-        XCTAssertEqual(returnedColor, chart.darkRedColor)
+        XCTAssertEqual(returnedColor, UIColor.darkRedColor)
     }
     
     func testGetBarColor_MiddleColor() {
         let chart = BarChart()
         let grade:Float = 0.6
         let returnedColor = chart.getBarColor(grade:grade)
-        XCTAssertEqual(returnedColor, chart.middleColor)
+        XCTAssertEqual(returnedColor, UIColor.middleColor)
     }
     
     func testGetBarColor_TopColor() {
         let chart = BarChart()
         let grade:Float = 0.8
         let returnedColor = chart.getBarColor(grade:grade)
-        XCTAssertEqual(returnedColor, chart.topColor)
+        XCTAssertEqual(returnedColor, UIColor.topColor)
     }
     
     // MARK: - testing getMaxYValue()
