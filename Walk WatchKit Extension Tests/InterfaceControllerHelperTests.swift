@@ -24,8 +24,8 @@ class InterfaceControllerHelperTests: XCTestCase {
         let expectedSteps    = motionSteps + Int(healthKitStepCount)
         
         interfaceControllerHelper.updateTheWatchDisplay(
-            steps: motionSteps, healthKitStepCount: healthKitStepCount,
-            distance: motionDistance, healthKitDistance: healthKitDistance,
+            steps: motionSteps, initialHealthKitStepCount: healthKitStepCount,
+            distance: motionDistance, initialHealthKitDistance: healthKitDistance,
             weeklyStepCountMax:weeklyStepCountMax) { (stepCount, stepCountColor, feet, meters, miles) -> Void in
                 XCTAssertEqual(expectedSteps, stepCount)
         }
@@ -43,8 +43,8 @@ class InterfaceControllerHelperTests: XCTestCase {
         let expectedFeetString  = "5910 FT"
         
         interfaceControllerHelper.updateTheWatchDisplay(
-            steps: motionSteps, healthKitStepCount: healthKitStepCount,
-            distance: motionDistance, healthKitDistance: healthKitDistance,
+            steps: motionSteps, initialHealthKitStepCount: healthKitStepCount,
+            distance: motionDistance, initialHealthKitDistance: healthKitDistance,
             weeklyStepCountMax:weeklyStepCountMax) { (stepCount, stepCountColor, feet, meters, miles) -> Void in
                 XCTAssertEqual(feet, expectedFeetString)
         }
@@ -61,8 +61,8 @@ class InterfaceControllerHelperTests: XCTestCase {
         
         let expectedMeterString = "1.80 KM"
         interfaceControllerHelper.updateTheWatchDisplay(
-            steps: motionSteps, healthKitStepCount: healthKitStepCount,
-            distance: motionDistance, healthKitDistance: healthKitDistance,
+            steps: motionSteps, initialHealthKitStepCount: healthKitStepCount,
+            distance: motionDistance, initialHealthKitDistance: healthKitDistance,
             weeklyStepCountMax:weeklyStepCountMax) { (stepCount, stepCountColor, feet, meters, miles) -> Void in
                 XCTAssertEqual(meters, expectedMeterString)
         }
@@ -80,8 +80,8 @@ class InterfaceControllerHelperTests: XCTestCase {
         let expectedMilesString = "1.12 Mi"
         
         interfaceControllerHelper.updateTheWatchDisplay(
-            steps: motionSteps, healthKitStepCount: healthKitStepCount,
-            distance: motionDistance, healthKitDistance: healthKitDistance,
+            steps: motionSteps, initialHealthKitStepCount: healthKitStepCount,
+            distance: motionDistance, initialHealthKitDistance: healthKitDistance,
             weeklyStepCountMax:weeklyStepCountMax) { (stepCount, stepCountColor, feet, meters, miles) -> Void in
                 XCTAssertEqual(miles, expectedMilesString)
         }
@@ -97,8 +97,8 @@ class InterfaceControllerHelperTests: XCTestCase {
         let weeklyStepCountMax = 4000.0
         
         interfaceControllerHelper.updateTheWatchDisplay(
-            steps: motionSteps, healthKitStepCount: healthKitStepCount,
-            distance: motionDistance, healthKitDistance: healthKitDistance,
+            steps: motionSteps, initialHealthKitStepCount: healthKitStepCount,
+            distance: motionDistance, initialHealthKitDistance: healthKitDistance,
             weeklyStepCountMax:weeklyStepCountMax) { (stepCount, stepCountColor, feet, meters, miles) -> Void in
                 XCTAssertEqual(stepCountColor, UIColor.darkRedColor)
         }
@@ -114,8 +114,8 @@ class InterfaceControllerHelperTests: XCTestCase {
         let weeklyStepCountMax = 4000.0
         
         interfaceControllerHelper.updateTheWatchDisplay(
-            steps: motionSteps, healthKitStepCount: healthKitStepCount,
-            distance: motionDistance, healthKitDistance: healthKitDistance,
+            steps: motionSteps, initialHealthKitStepCount: healthKitStepCount,
+            distance: motionDistance, initialHealthKitDistance: healthKitDistance,
             weeklyStepCountMax:weeklyStepCountMax) { (stepCount, stepCountColor, feet, meters, miles) -> Void in
                 XCTAssertEqual(stepCountColor, UIColor.middleColor)
         }
@@ -131,8 +131,8 @@ class InterfaceControllerHelperTests: XCTestCase {
         let weeklyStepCountMax = 4000.0
         
         interfaceControllerHelper.updateTheWatchDisplay(
-            steps: motionSteps, healthKitStepCount: healthKitStepCount,
-            distance: motionDistance, healthKitDistance: healthKitDistance,
+            steps: motionSteps, initialHealthKitStepCount: healthKitStepCount,
+            distance: motionDistance, initialHealthKitDistance: healthKitDistance,
             weeklyStepCountMax:weeklyStepCountMax) { (stepCount, stepCountColor, feet, meters, miles) -> Void in
                 XCTAssertEqual(stepCountColor, UIColor.topColor)
         }

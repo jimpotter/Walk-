@@ -41,5 +41,7 @@
 	</array>
 	<key>NSMotionUsageDescription</key>
 	<string>To Use Pedometer</string>
+	<key>UIFileSharingEnabled</key>
+	<true/>
 </dict>
 </plist>

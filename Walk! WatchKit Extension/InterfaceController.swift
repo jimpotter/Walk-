@@ -7,9 +7,15 @@
 //
 
 import WatchKit
+import WatchConnectivity
 import UserNotifications
+import HealthKit
 
-class InterfaceController: WKInterfaceController {
+class InterfaceController: WKInterfaceController, WCSessionDelegate {
+    
+    // set to true to copy messages to the iPhone.
+    // companion iPhone app sends them to NSLogger on the Mac & a file in the Documents Directory, where you can grab it usint iTunes
+    let sendMessagesToParentPhone = false
     
     @IBOutlet var stepsLabel: WKInterfaceLabel!
     @IBOutlet var feetLabel: WKInterfaceLabel!
@@ -24,12 +30,24 @@ class InterfaceController: WKInterfaceController {
     fileprivate var didDeactivateDateStamp = ""
     fileprivate var weeklyStepCountMax:Double = 0.0
     
+    var initialHealthKitStepCount = 0.0
+    var initialHealthKitDistance = 0.0
+
+    // MARK: - Properties
+    var session : WCSession!
+
     override func awake(withContext context: Any?) {
         super.awake(withContext: context)
         
+        if WCSession.isSupported() {        // configure and activate the session
+            session = WCSession.default()
+            session.delegate = self
+            session.activate()
+        }
+
         motionManager.delegate = self
         self.motionManager.startMonitoring()
-        checkHealthKit()
+        checkHealthKit(healthKitManager: healthKitManager)
 
         NotificationCenter.default.addObserver(self, selector: #selector(AppBecomeActive(_:)), name: .becomeActive, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleUpdatedWeeklyStepCountMax(_:)), name: .weeklyStepCountMaxUpdated, object: nil)
@@ -42,18 +60,28 @@ class InterfaceController: WKInterfaceController {
     // if we happen to have crossed a date boundary just now, call resetCounts()
     override func willActivate() {
         super.willActivate()
+        
         willActivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
         if didDeactivateDateStamp == interfaceControllerHelper.getCurrentDateStamp() {
-            print("====>  willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) == currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp())")
+            
+//            print("====>  willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) == currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp())")
+            sendMessage(messageToSend:"====>  willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) == currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp())")
+            
             self.motionManager.queryPedometer(from:didDeactivateDate, to:Date())
         }
         else {
             if didDeactivateDateStamp == "" {
-                print("====>   willActivate: didDeactivateDateStamp blank,      currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+                
+//                print("====>   willActivate: didDeactivateDateStamp blank,      currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+                sendMessage(messageToSend:"====>   willActivate: didDeactivateDateStamp blank,      currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+                
                 resetCounts(sendNotification:false)
             }
             else {
-                print("====>   willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+                
+//                print("====>   willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+                sendMessage(messageToSend:"====>   willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+                
                 resetCounts()
             }
         }
@@ -68,10 +96,22 @@ class InterfaceController: WKInterfaceController {
         didDeactivateDate = Date()
         didDeactivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
         if didDeactivateDateStamp != willActivateDateStamp {
-            print("====>   didDeactivate: willActivateDateStamp \(willActivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+            
+//            print("====>   didDeactivate: willActivateDateStamp \(willActivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+            sendMessage(messageToSend:"====>   didDeactivate: willActivateDateStamp \(willActivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
+            
             resetCounts()
         }
-        print("====> didDeactivate: didDeactivateDateStamp \(didDeactivateDateStamp).")
+        
+//        print("====> didDeactivate: didDeactivateDateStamp \(didDeactivateDateStamp).")
+        sendMessage(messageToSend:"====> didDeactivate: didDeactivateDateStamp \(didDeactivateDateStamp).")
+        
+    }
+    
+    // Called when the session has completed activation. If session state is WCSessionActivationStateNotActivated there will be an error with more details.
+    @available(watchOS 2.2, *)
+    public func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        //..code
     }
 }
 
@@ -79,8 +119,11 @@ extension InterfaceController:UNUserNotificationCenterDelegate {
     func handleUpdatedWeeklyStepCountMax(_ notification: Notification) {
         guard let userInfo = notification.userInfo, let weeklyStepCountMax  = userInfo[Constant.WeeklyStepCountMax.rawValue] as? Double else { return }
         
-        print("handleUpdatedWeeklyStepCountMax: weeklyStepCountMax now \(weeklyStepCountMax)")
+//        print("handleUpdatedWeeklyStepCountMax: weeklyStepCountMax now \(weeklyStepCountMax)")
+        sendMessage(messageToSend:"handleUpdatedWeeklyStepCountMax: weeklyStepCountMax now \(weeklyStepCountMax)")
+        
         self.weeklyStepCountMax = weeklyStepCountMax
+        updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
     }
 
     internal func AppBecomeActive(_ notification: Notification) {
@@ -94,9 +137,7 @@ extension InterfaceController:MotionContextDelegate {
     func didEncounterAuthorizationError(_ manager: MotionManager, error:NSError) {  // we have encountered an authorization error
         presentAlert("ERROR", message:error.localizedDescription)                   // Present an alert to the user
     }
-}
 
-extension InterfaceController {
     func notifyDelegate(_ manager: MotionManager) {    // new Motion data has been received.  Update the view
         let motionSteps    = manager.recentPedometerData.numberOfSteps.intValue
         if let motionDistance = manager.recentPedometerData.distance?.doubleValue {
@@ -107,7 +148,9 @@ extension InterfaceController {
             WKInterfaceDevice.current().play(.failure)
         }
     }
+}
 
+extension InterfaceController {
     //  we are in a new day.
     // zero out today's current value
     // move over stored values in previous days
@@ -120,17 +163,15 @@ extension InterfaceController {
         }
         didDeactivateDate = Date()
         didDeactivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
-        healthKitManager.healthKitStepCount = 0.0
-        healthKitManager.healthKitDistance  = 0.0
         
         updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
-        checkHealthKit()
+        checkHealthKit(healthKitManager: healthKitManager)
     }
     
     fileprivate func updateTheWatchDisplay(motionSteps:Int, motionDistance:Double) {
         interfaceControllerHelper.updateTheWatchDisplay(
-            steps: motionSteps, healthKitStepCount: healthKitManager.healthKitStepCount,
-            distance: motionDistance, healthKitDistance: healthKitManager.healthKitDistance,
+            steps: motionSteps, initialHealthKitStepCount: self.initialHealthKitStepCount,
+            distance: motionDistance, initialHealthKitDistance: self.initialHealthKitDistance,
             weeklyStepCountMax:self.weeklyStepCountMax) { (stepCount, stepCountColor, feet, meters, miles) -> Void in
                 DispatchQueue.main.async {
                     self.setStepsLabel(string:String(stepCount), color:stepCountColor)
@@ -148,13 +189,24 @@ extension InterfaceController {
     }
     
     // query HealthKit for updated values
-    fileprivate func checkHealthKit () {
-        healthKitManager.retrieveStepCount { (stepCount) -> Void in
-            self.healthKitManager.healthKitStepCount = stepCount
+    fileprivate func checkHealthKit (healthKitManager:HealthKitMgr) {
+        
+//        print("checkHealthKit:")
+        sendMessage(messageToSend:"checkHealthKit:")
+        
+        interfaceControllerHelper.checkHealthKitForStepCount(healthKitManager: healthKitManager) { (stepCount) -> Void in
+
+            self.sendMessage(messageToSend:"checkHealthKitForStepCount: \(stepCount) steps.")
+
+            self.initialHealthKitStepCount = stepCount
             self.updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
         }
-        healthKitManager.retrieveMeterDistance { (distance) -> Void in
-            self.healthKitManager.healthKitDistance = distance
+        
+        interfaceControllerHelper.checkHealthKitForDistance(healthKitManager: healthKitManager) { (distance) -> Void in
+            
+            self.sendMessage(messageToSend:"checkHealthKitForDistance: \(distance) meters.")
+            
+            self.initialHealthKitDistance = distance
             self.updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
         }
     }
@@ -191,3 +243,58 @@ extension InterfaceController {
     }
 }
 
+//MARK: - WatchActions -> InterfaceController
+//typealias WatchActions = InterfaceController
+//extension WatchActions {
+//    @IBAction func sendToParent() {    // Send message to paired iOS App (Parent)
+//        sendMessage()
+//    }
+//}
+
+//MARK: - WatchSessionProtocol -> InterfaceController
+typealias WatchSessionProtocol = InterfaceController
+extension WatchSessionProtocol {
+    
+    // WCSession Delegate protocol
+    func session(_ session: WCSession, didReceiveMessage message: [String : Any], replyHandler: @escaping ([String : Any]) -> Void) {
+//        let value = message["Message"] as? String        // Reply handler, received message
+        
+        // do something with the received message...?
+        
+        // Send a reply
+        replyHandler(["Message":"Yes!\niOS 9.0 + WatchOS2 ..AAAAAAmazing!"])
+        
+    }
+}
+
+
+//MARK: - WatchSessionTasks -> InterfaceController
+typealias WatchSessionTasks = InterfaceController
+extension WatchSessionTasks {
+    
+    // Method to send message to paired iOS App (Parent)
+    func sendMessage(messageToSend:String) {
+        
+        print(messageToSend)    // print message to the console
+        
+        if sendMessagesToParentPhone == true {
+
+            // set to true to copy messages to the iPhone.
+            // companion iPhone app sends them to NSLogger on the Mac & a file in the Documents Directory, where you can grab it usint iTunes
+
+            let messageDict = ["Message":messageToSend]
+            
+            // Task : Sends a message immediately to the counterpart and optionally delivers a response
+            session.sendMessage(messageDict, replyHandler: { (replyMessage) in
+                
+                // Reply handler - present the reply message on screen
+                // let value = replyMessage["Message"] as? String
+                // do something with the received message...?
+
+            }) { (error) in
+                // Catch any error Handler
+                print("error: \(error.localizedDescription)")
+            }
+        }
+    }
+}

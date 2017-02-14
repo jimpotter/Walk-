@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>SchemeUserState</key>
+	<dict>
+		<key>NSLogger.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Pods-Walk! WatchKit App.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Pods-Walk! WatchKit Extension.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>Pods-Walk!.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>0ED7AE8BF93AE45145D2B2BFEF771469</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>2B285FE3547B46EF0271EBCD3A855D78</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>7B2E33F9B558995FFF7049A1A46933AF</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>965622C58F1D61BEA97360D287B5D3CE</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+	</dict>
+</dict>
+</plist>

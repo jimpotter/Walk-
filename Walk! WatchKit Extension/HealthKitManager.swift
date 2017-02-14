@@ -8,39 +8,13 @@
 
 import HealthKit
 
-struct HealthKitManager {
-    var healthKitStepCount = 0.0
-    var healthKitDistance = 0.0
+protocol HealthKitMgr {
+    func retrieveHealthKitValue(startDate:Date, endDate:Date, quantityFor:HKUnit, quantityTypeIdentifier:HKQuantityTypeIdentifier, completion: @escaping (_ quantityValue: Double) -> Void)
+}
+
+struct HealthKitManager:HealthKitMgr {
     fileprivate let healthStore = HKHealthStore()
     fileprivate let calendar = Calendar(identifier: Calendar.Identifier.gregorian)
-    
-    // retrieve accumulated step counts in HealthKit.  
-    // called from the main InterfaceController, Convenience accessor for retrieveHealthKitValue()
-    mutating func retrieveStepCount(completion: @escaping (_ quantityValue: Double) -> Void) {
-        let startOfToday = calendar.startOfDay(for: Date())
-        
-        retrieveHealthKitValue(
-            startDate: startOfToday,
-            endDate: Date(),
-            quantityFor: HKUnit.count(),
-            quantityTypeIdentifier:HKQuantityTypeIdentifier.stepCount) { (quantityValue) -> Void in
-                completion(quantityValue)
-        }
-    }
-    
-    // retrieve accumulated meters distance in HealthKit.
-    // called from the main InterfaceController, Convenience accessor for retrieveHealthKitValue()
-    mutating func retrieveMeterDistance(completion: @escaping (_ quantityValue: Double) -> Void) {
-        let startOfToday = calendar.startOfDay(for: Date())
-        
-        retrieveHealthKitValue(
-            startDate: startOfToday,
-            endDate: Date(),
-            quantityFor: HKUnit.meter(),
-            quantityTypeIdentifier:HKQuantityTypeIdentifier.distanceWalkingRunning) { (quantityValue) -> Void in
-                completion(quantityValue)
-        }
-    }
     
     // retrieve accumulated meters distance or step countsin HealthKit.
     // called by retrieveStepCount(), retrieveMeterDistance(), DistanceModel and StepCountModel classes
@@ -62,6 +36,7 @@ struct HealthKitManager {
             
             query.initialResultsHandler = { query, results, error in
                 if error != nil {
+                    print("retrieveHealthKitValue error: \(error?.localizedDescription)")
                     return          //  Something went Wrong
                 }
                 if let myResults = results {
@@ -72,6 +47,9 @@ struct HealthKitManager {
                             completion(quantityValue)
                         }
                     }
+                }
+                else {
+                    print("Could not recognise HKStatisticsCollectionQuery results \(results)!")
                 }
             }
             healthStore.execute(query)

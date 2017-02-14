@@ -9,25 +9,22 @@
 import HealthKit
 
 class StepCountModel: NSObject {
-    fileprivate let healthKitManager = HealthKitManager()
     fileprivate var stepCountBarChartController: StepCountBarChartController
+    internal var stepCountModelHelper = StepCountModelHelper()
     var weeklyStepCountMax:Double = 0.0
     var weeklyStepCounts: [Double] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] {
         didSet {
             UserDefaults.standard.set(weeklyStepCounts, forKey: Constant.WeeklyStepCounts.rawValue)
             
-            let sorted = weeklyStepCounts.sorted(by: { $0 > $1 })
-            if weeklyStepCountMax != sorted[0] {
-                weeklyStepCountMax = sorted[0]
+            if let maxValue = weeklyStepCounts.max() {
+            if weeklyStepCountMax != maxValue {
+                weeklyStepCountMax = maxValue
                 
-// fake fake fake
-//                print("weeklyStepCountMax: \(weeklyStepCountMax)")
-//                weeklyStepCountMax = 2500.0
-// fake fake fake
-
+                // if we have a new maximum value of stepcounts, notify the INterfaceController
                 NotificationCenter.default.post(name: .weeklyStepCountMaxUpdated,
-                                            object: self,
-                                            userInfo: [Constant.WeeklyStepCountMax.rawValue:weeklyStepCountMax])
+                                                object: self,
+                                                userInfo: [Constant.WeeklyStepCountMax.rawValue:weeklyStepCountMax])
+                }
             }
         }
     }
@@ -43,7 +40,11 @@ class StepCountModel: NSObject {
         // Watch for updated Distance
         NotificationCenter.default.addObserver(self, selector: #selector(handleUpdatedStepCount(_:)), name: .stepCountUpdated, object: nil)
         
-        initialBarChartStepCount()  // get the initial step count (etc)
+        self.weeklyStepCounts[6] = 0.0
+        stepCountModelHelper.checkStepCounts (healthKitManager: HealthKitManager(), weeklyStepCounts:weeklyStepCounts) { (index, stepCount) -> Void in
+                self.weeklyStepCounts[index] = stepCount
+                self.stepCountBarChartController.redrawTheBarChartDisplay(weeklyStepCounts: self.weeklyStepCounts)
+        }
     }
     
     func handleUpdatedStepCount(_ notification: Notification) {
@@ -62,25 +63,17 @@ class StepCountModel: NSObject {
         weeklyStepCounts[6] = 0
         print("stepCountModel: handleNewDay weeklyStepCounts was \(localWeeklyStepCount), \nnow \(weeklyStepCounts)")
     }
-    
-    fileprivate func initialBarChartStepCount() {
-        print("stepCountModel: initialBarChartStepCount:")
-        
-        self.weeklyStepCounts[6] = 0
-        checkStepCounts { (index, stepCount) -> Void in
-            self.weeklyStepCounts[index] = stepCount
-            self.stepCountBarChartController.redrawTheBarChartDisplay(weeklyStepCounts: self.weeklyStepCounts)
-        }
-    }
-    
-    fileprivate func checkStepCounts(completion: @escaping (_ index:Int, _ quantityValue: Double) -> Void) {
+}
+
+struct StepCountModelHelper {
+    internal func checkStepCounts(healthKitManager:HealthKitMgr, weeklyStepCounts: [Double], completion: @escaping (_ index:Int, _ quantityValue: Double) -> Void) {
         let todaysDate = Date()
-        self.weeklyStepCounts[6] = 0
+//        weeklyStepCounts[6] = 0
         let calendar = Calendar(identifier: Calendar.Identifier.gregorian)
         
-        for (index, stepCount) in self.weeklyStepCounts.enumerated() {
+        for (index, stepCount) in weeklyStepCounts.enumerated() {
             if stepCount == 0 {
-                let previousCount = index - (self.weeklyStepCounts.count - 1)
+                let previousCount = index - (weeklyStepCounts.count - 1)
                 if let date = calendar.date(byAdding: .day, value: previousCount, to: todaysDate) {
                     let startOfToday = calendar.startOfDay(for: date)
                     let endOfToday   = calendar.date(byAdding: .day, value: 1, to: startOfToday)

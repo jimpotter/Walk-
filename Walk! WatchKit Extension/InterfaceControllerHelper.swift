@@ -7,8 +7,39 @@
 //
 
 import WatchKit
+import HealthKit
 
 struct InterfaceControllerHelper {
+    internal func checkHealthKitForStepCount ( healthKitManager:HealthKitMgr, completion: @escaping (Double) -> Void) {
+        let calendar = Calendar(identifier: Calendar.Identifier.gregorian)
+        let startOfToday = calendar.startOfDay(for: Date())
+        healthKitManager.retrieveHealthKitValue(
+            startDate: startOfToday,
+            endDate: Date(),
+            quantityFor: HKUnit.count(),
+            quantityTypeIdentifier:HKQuantityTypeIdentifier.stepCount) { (stepCount) -> Void  in
+                
+//                print("Helper: checkHealthKitForStepCount: stepCount \(stepCount)")
+
+                completion(stepCount)
+        }
+    }
+    
+    internal func checkHealthKitForDistance ( healthKitManager:HealthKitMgr, completion: @escaping (Double) -> Void) {
+        let calendar = Calendar(identifier: Calendar.Identifier.gregorian)
+        let startOfToday = calendar.startOfDay(for: Date())
+        healthKitManager.retrieveHealthKitValue(
+            startDate: startOfToday,
+            endDate: Date(),
+            quantityFor: HKUnit.meter(),
+            quantityTypeIdentifier:HKQuantityTypeIdentifier.distanceWalkingRunning) { (distance) -> Void  in
+
+//                print("Helper: checkHealthKitForDistance: distance \(distance)")
+
+                completion(distance)
+        }
+    }
+
     internal func getCurrentDateStamp (date:Date = Date()) -> String {
         let shortFormatter = DateFormatter()
         shortFormatter.setLocalizedDateFormatFromTemplate("yyMMdd")
@@ -16,10 +47,15 @@ struct InterfaceControllerHelper {
         return currentDateStamp
     }
 
-    internal func updateTheWatchDisplay (steps:Int, healthKitStepCount:Double, distance:Double, healthKitDistance:Double, weeklyStepCountMax:Double, completion: @escaping (Int, _ stepCountColor:UIColor, _ feet:String, _ meters:String, _ miles:String) -> Void) {
+    internal func updateTheWatchDisplay (steps:Int,
+                                         initialHealthKitStepCount:Double,
+                                         distance:Double,
+                                         initialHealthKitDistance:Double,
+                                         weeklyStepCountMax:Double,
+                                         completion: @escaping (Int, _ stepCountColor:UIColor, _ feet:String, _ meters:String, _ miles:String) -> Void) {
         
-        let combinedStepCount = Int(steps + Int(healthKitStepCount))
-        let combinedDistance  = Double(distance + healthKitDistance)
+        let combinedStepCount = Int(steps + Int(initialHealthKitStepCount))
+        let combinedDistance  = Double(distance + initialHealthKitDistance)
         
         NotificationCenter.default.post(name: .stepCountUpdated, object: self, userInfo: [Constant.StepCount.rawValue:Double(combinedStepCount)])
         NotificationCenter.default.post(name: .distanceUpdated, object: self, userInfo: [Constant.Distance.rawValue:(combinedDistance / 1609.344)])
@@ -56,6 +92,9 @@ struct InterfaceControllerHelper {
         default:
             stepCountColor = UIColor.topColor
         }
+        
+//        print("Helper: updateTheWatchDisplay: combinedStepCount \(combinedStepCount), weeklyStepCountMax \(weeklyStepCountMax), grade \(grade)")
+        
         completion(combinedStepCount, stepCountColor, feetString, meterString, milesString)
     }
 }

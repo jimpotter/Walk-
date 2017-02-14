@@ -9,9 +9,9 @@
 import HealthKit
 
 class DistanceModel: NSObject {
-    fileprivate let healthKitManager = HealthKitManager()
     fileprivate var distanceBarChartController: DistanceBarChartController
-    
+    internal var distanceModelHelper = DistanceModelHelper()
+
     var weeklyDistance: [Double] = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0] {
         didSet {
             UserDefaults.standard.set(weeklyDistance, forKey: Constant.WeeklyDistance.rawValue)
@@ -30,7 +30,11 @@ class DistanceModel: NSObject {
         // Watch for updated Distance
         NotificationCenter.default.addObserver(self, selector: #selector(handleUpdatedDistance(_:)), name: .distanceUpdated, object: nil)
         
-        initialBarChartDistance()  // get the initial step count (etc)
+        self.weeklyDistance[6] = 0.0
+        distanceModelHelper.checkDistance (healthKitManager: HealthKitManager(), weeklyDistance:weeklyDistance) { (index, distance) -> Void in
+            self.weeklyDistance[index] = distance
+            self.distanceBarChartController.redrawTheBarChartDisplay(weeklyDistance: self.weeklyDistance)
+        }
     }
     
     func handleUpdatedDistance(_ notification: Notification) {
@@ -50,23 +54,18 @@ class DistanceModel: NSObject {
         print("distanceModel: handleNewDay weeklyDistance was \(localWeeklyDistance), \nnow \(weeklyDistance)")
     }
     
-    fileprivate func initialBarChartDistance() {
-        print("distanceModel: initialBarChartDistance:")
-        self.weeklyDistance[6] = 0.0
-        checkDistance { (index, distance) -> Void in
-            self.weeklyDistance[index] = distance
-            self.distanceBarChartController.redrawTheBarChartDisplay(weeklyDistance: self.weeklyDistance)
-        }
-    }
-    
-    fileprivate func checkDistance(completion: @escaping (_ index:Int, _ quantityValue: Double) -> Void) {
+}
+
+struct DistanceModelHelper {
+    internal func checkDistance(healthKitManager:HealthKitMgr, weeklyDistance: [Double], completion: @escaping (_ index:Int, _ quantityValue: Double) -> Void) {
         let todaysDate = Date()
         let calendar = Calendar(identifier: Calendar.Identifier.gregorian)
         print("distanceModel: checkDistance: calendar \(calendar)")
         
-        for (index, distance) in self.weeklyDistance.enumerated() {
+        
+        for (index, distance) in weeklyDistance.enumerated() {
             if distance == 0.0 {
-                let previousCount = index - (self.weeklyDistance.count - 1)
+                let previousCount = index - (weeklyDistance.count - 1)
                 if let date = calendar.date(byAdding: .day, value: previousCount, to: todaysDate) {
                     let startOfToday = calendar.startOfDay(for: date)
                     let endOfToday   = calendar.date(byAdding: .day, value: 1, to: startOfToday)
