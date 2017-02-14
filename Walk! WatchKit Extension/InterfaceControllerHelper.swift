@@ -18,9 +18,6 @@ struct InterfaceControllerHelper {
             endDate: Date(),
             quantityFor: HKUnit.count(),
             quantityTypeIdentifier:HKQuantityTypeIdentifier.stepCount) { (stepCount) -> Void  in
-                
-//                print("Helper: checkHealthKitForStepCount: stepCount \(stepCount)")
-
                 completion(stepCount)
         }
     }
@@ -33,9 +30,6 @@ struct InterfaceControllerHelper {
             endDate: Date(),
             quantityFor: HKUnit.meter(),
             quantityTypeIdentifier:HKQuantityTypeIdentifier.distanceWalkingRunning) { (distance) -> Void  in
-
-//                print("Helper: checkHealthKitForDistance: distance \(distance)")
-
                 completion(distance)
         }
     }
@@ -92,9 +86,6 @@ struct InterfaceControllerHelper {
         default:
             stepCountColor = UIColor.topColor
         }
-        
-//        print("Helper: updateTheWatchDisplay: combinedStepCount \(combinedStepCount), weeklyStepCountMax \(weeklyStepCountMax), grade \(grade)")
-        
         completion(combinedStepCount, stepCountColor, feetString, meterString, milesString)
     }
 }

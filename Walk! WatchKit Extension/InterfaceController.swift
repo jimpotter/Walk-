@@ -15,7 +15,7 @@ class InterfaceController: WKInterfaceController, WCSessionDelegate {
     
     // set to true to copy messages to the iPhone.
     // companion iPhone app sends them to NSLogger on the Mac & a file in the Documents Directory, where you can grab it usint iTunes
-    let sendMessagesToParentPhone = false
+    let sendMessagesToParentPhone = true
     
     @IBOutlet var stepsLabel: WKInterfaceLabel!
     @IBOutlet var feetLabel: WKInterfaceLabel!
@@ -30,8 +30,8 @@ class InterfaceController: WKInterfaceController, WCSessionDelegate {
     fileprivate var didDeactivateDateStamp = ""
     fileprivate var weeklyStepCountMax:Double = 0.0
     
-    var initialHealthKitStepCount = 0.0
-    var initialHealthKitDistance = 0.0
+    fileprivate var initialHealthKitStepCount = 0.0
+    fileprivate var initialHealthKitDistance = 0.0
 
     // MARK: - Properties
     var session : WCSession!
@@ -63,25 +63,16 @@ class InterfaceController: WKInterfaceController, WCSessionDelegate {
         
         willActivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
         if didDeactivateDateStamp == interfaceControllerHelper.getCurrentDateStamp() {
-            
-//            print("====>  willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) == currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp())")
             sendMessage(messageToSend:"====>  willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) == currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp())")
-            
             self.motionManager.queryPedometer(from:didDeactivateDate, to:Date())
         }
         else {
             if didDeactivateDateStamp == "" {
-                
-//                print("====>   willActivate: didDeactivateDateStamp blank,      currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
                 sendMessage(messageToSend:"====>   willActivate: didDeactivateDateStamp blank,      currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
-                
                 resetCounts(sendNotification:false)
             }
             else {
-                
-//                print("====>   willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
-                sendMessage(messageToSend:"====>   willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
-                
+                sendMessage(messageToSend:"====>   willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")                
                 resetCounts()
             }
         }
@@ -96,32 +87,17 @@ class InterfaceController: WKInterfaceController, WCSessionDelegate {
         didDeactivateDate = Date()
         didDeactivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
         if didDeactivateDateStamp != willActivateDateStamp {
-            
-//            print("====>   didDeactivate: willActivateDateStamp \(willActivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
             sendMessage(messageToSend:"====>   didDeactivate: willActivateDateStamp \(willActivateDateStamp) != currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()): Zeroing out the currentSteps, checking HealthKit:")
-            
             resetCounts()
         }
-        
-//        print("====> didDeactivate: didDeactivateDateStamp \(didDeactivateDateStamp).")
         sendMessage(messageToSend:"====> didDeactivate: didDeactivateDateStamp \(didDeactivateDateStamp).")
-        
-    }
-    
-    // Called when the session has completed activation. If session state is WCSessionActivationStateNotActivated there will be an error with more details.
-    @available(watchOS 2.2, *)
-    public func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
-        //..code
     }
 }
 
 extension InterfaceController:UNUserNotificationCenterDelegate {
     func handleUpdatedWeeklyStepCountMax(_ notification: Notification) {
         guard let userInfo = notification.userInfo, let weeklyStepCountMax  = userInfo[Constant.WeeklyStepCountMax.rawValue] as? Double else { return }
-        
-//        print("handleUpdatedWeeklyStepCountMax: weeklyStepCountMax now \(weeklyStepCountMax)")
         sendMessage(messageToSend:"handleUpdatedWeeklyStepCountMax: weeklyStepCountMax now \(weeklyStepCountMax)")
-        
         self.weeklyStepCountMax = weeklyStepCountMax
         updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
     }
@@ -190,22 +166,15 @@ extension InterfaceController {
     
     // query HealthKit for updated values
     fileprivate func checkHealthKit (healthKitManager:HealthKitMgr) {
-        
-//        print("checkHealthKit:")
         sendMessage(messageToSend:"checkHealthKit:")
-        
         interfaceControllerHelper.checkHealthKitForStepCount(healthKitManager: healthKitManager) { (stepCount) -> Void in
-
             self.sendMessage(messageToSend:"checkHealthKitForStepCount: \(stepCount) steps.")
-
             self.initialHealthKitStepCount = stepCount
             self.updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
         }
         
         interfaceControllerHelper.checkHealthKitForDistance(healthKitManager: healthKitManager) { (distance) -> Void in
-            
             self.sendMessage(messageToSend:"checkHealthKitForDistance: \(distance) meters.")
-            
             self.initialHealthKitDistance = distance
             self.updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
         }
@@ -243,17 +212,14 @@ extension InterfaceController {
     }
 }
 
-//MARK: - WatchActions -> InterfaceController
-//typealias WatchActions = InterfaceController
-//extension WatchActions {
-//    @IBAction func sendToParent() {    // Send message to paired iOS App (Parent)
-//        sendMessage()
-//    }
-//}
-
 //MARK: - WatchSessionProtocol -> InterfaceController
 typealias WatchSessionProtocol = InterfaceController
 extension WatchSessionProtocol {
+    // Called when the session has completed activation. If session state is WCSessionActivationStateNotActivated there will be an error with more details.
+    @available(watchOS 2.2, *)
+    public func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        //..code
+    }
     
     // WCSession Delegate protocol
     func session(_ session: WCSession, didReceiveMessage message: [String : Any], replyHandler: @escaping ([String : Any]) -> Void) {
@@ -274,12 +240,9 @@ extension WatchSessionTasks {
     
     // Method to send message to paired iOS App (Parent)
     func sendMessage(messageToSend:String) {
-        
         print(messageToSend)    // print message to the console
-        
         if sendMessagesToParentPhone == true {
-
-            // set to true to copy messages to the iPhone.
+            // set sendMessagesToParentPhone to true to copy messages to the iPhone.
             // companion iPhone app sends them to NSLogger on the Mac & a file in the Documents Directory, where you can grab it usint iTunes
 
             let messageDict = ["Message":messageToSend]

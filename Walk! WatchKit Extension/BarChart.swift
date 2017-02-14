@@ -226,7 +226,6 @@ enum Constant: String{
 }
 
 extension Notification.Name {
-    
     static let weeklyStepCountMaxUpdated = Notification.Name(rawValue: "WeeklyStepCountMaxUpdated")
     static let stepCountUpdated          = Notification.Name(rawValue: "StepCountUpdatedNotification")
     static let distanceUpdated           = Notification.Name(rawValue: "DistanceUpdatedNotification")

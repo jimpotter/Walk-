@@ -22,8 +22,8 @@ class StepCountModel: NSObject {
                 
                 // if we have a new maximum value of stepcounts, notify the INterfaceController
                 NotificationCenter.default.post(name: .weeklyStepCountMaxUpdated,
-                                                object: self,
-                                                userInfo: [Constant.WeeklyStepCountMax.rawValue:weeklyStepCountMax])
+                                            object: self,
+                                            userInfo: [Constant.WeeklyStepCountMax.rawValue:weeklyStepCountMax])
                 }
             }
         }
@@ -68,7 +68,6 @@ class StepCountModel: NSObject {
 struct StepCountModelHelper {
     internal func checkStepCounts(healthKitManager:HealthKitMgr, weeklyStepCounts: [Double], completion: @escaping (_ index:Int, _ quantityValue: Double) -> Void) {
         let todaysDate = Date()
-//        weeklyStepCounts[6] = 0
         let calendar = Calendar(identifier: Calendar.Identifier.gregorian)
         
         for (index, stepCount) in weeklyStepCounts.enumerated() {
