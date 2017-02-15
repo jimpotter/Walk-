@@ -34,11 +34,9 @@ class ViewController: UIViewController, WCSessionDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        startNSLogger()
-        
-        logMessage(message: "viewDidLoad of Walk! iPhone app")
 
+        startNSLogger() // start NSLogger
+        
         if WCSession.isSupported() {        // configure and activate the session
             session = WCSession.default()
             session.delegate = self
@@ -46,34 +44,21 @@ class ViewController: UIViewController, WCSessionDelegate {
         }
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        LogMessageRaw("viewWillAppear: \(Date())")
-
-    }
-
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
 
-    // Called when all delegate callbacks for the previously selected watch has occurred. The session can be re-activated for the now selected watch using activateSession.
     @available(iOS 9.3, *)
     public func sessionDidDeactivate(_ session: WCSession) {
-        //..
     }
     
-    
-    // Called when the session can no longer be used to modify or add any new transfers and, all interactive messages will be cancelled, but delegate callbacks for background transfers can still occur. This will happen when the selected watch is being changed.
     @available(iOS 9.3, *)
     public func sessionDidBecomeInactive(_ session: WCSession) {
-        //..
     }
     
-    
-    // Called when the session has completed activation. If session state is WCSessionActivationStateNotActivated there will be an error with more details.
     @available(iOS 9.3, *)
     public func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
-        //..
     }
 }
 
@@ -86,11 +71,11 @@ extension WatchSessionProtocol {
         // Reply handler, received message
         if let value = message["Message"] as? String {
             
-//            print(value)                // print message to the console
             logMessage(message: value)  // send message string to NSLogger
 
+            let bundleName = Bundle.main.object(forInfoDictionaryKey: kCFBundleNameKey as String) as! String
             let fileURL = try! FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-                .appendingPathComponent("aoutputStream.txt")
+                .appendingPathComponent(bundleName + ".txt")
             
             if let outputStream = OutputStream(url: fileURL, append: true) {
                 outputStream.open()
@@ -114,29 +99,3 @@ extension WatchSessionProtocol {
         replyHandler(["Message":"Hey Watch! Nice to meet you!\nWould you like work with me?"])
     }
 }
-
-//MARK: - PairedActions -> ViewController
-//typealias PairedActions = ViewController
-//extension PairedActions {
-//    @IBAction func sendToWatch(_ sender: AnyObject) {    // Send message to Apple Watch
-//        sendMessage()
-//    }
-//}
-
-//MARK: - WatchSessionTasks -> ViewController
-//typealias WatchSessionTasks = ViewController
-//extension WatchSessionTasks {
-//    func sendMessage() {    // Method to send message to watchOS
-//        
-//        let messageToSend = ["Message":"Hi watch, are you here?"]        // A dictionary of property list values that you want to send.
-//        
-//        // Task : Sends a message immediately to the counterpart and optionally delivers a response
-//        session.sendMessage(messageToSend, replyHandler: { (replyMessage) in
-//            // Reply handler - present the reply message on screen
-//            let value = replyMessage["Message"] as? String
-//        }) { (error) in
-//            // Catch any error Handler
-//            print("error: \(error.localizedDescription)")
-//        }
-//    }
-//}

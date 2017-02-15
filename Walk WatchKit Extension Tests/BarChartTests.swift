@@ -161,18 +161,7 @@ class BarChartTests: XCTestCase {
         XCTAssertEqual(returnedRect.size.width, expectedRect.size.width)
         XCTAssertEqual(returnedRect.size.height, expectedRect.size.height)
     }
-    
-    //    //MARK: - setUp & tearDown
-    override func setUp() {
-        super.setUp()
-    }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
-    
+        
     //    //MARK: - Mocks
     class MockUIColor: UIColor {
         override func setStroke() {

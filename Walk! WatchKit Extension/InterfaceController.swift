@@ -15,7 +15,7 @@ class InterfaceController: WKInterfaceController, WCSessionDelegate {
     
     // set to true to copy messages to the iPhone.
     // companion iPhone app sends them to NSLogger on the Mac & a file in the Documents Directory, where you can grab it usint iTunes
-    let sendMessagesToParentPhone = true
+    let sendMessagesToParentPhone = false
     
     @IBOutlet var stepsLabel: WKInterfaceLabel!
     @IBOutlet var feetLabel: WKInterfaceLabel!
@@ -63,7 +63,7 @@ class InterfaceController: WKInterfaceController, WCSessionDelegate {
         
         willActivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
         if didDeactivateDateStamp == interfaceControllerHelper.getCurrentDateStamp() {
-            sendMessage(messageToSend:"====>  willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) == currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp())")
+            sendMessage(messageToSend:"====>  willActivate: didDeactivateDateStamp \(didDeactivateDateStamp) == currentDateStamp \(interfaceControllerHelper.getCurrentDateStamp()).  didDeactivateDate \(didDeactivateDate)")
             self.motionManager.queryPedometer(from:didDeactivateDate, to:Date())
         }
         else {
@@ -140,6 +140,9 @@ extension InterfaceController {
         didDeactivateDate = Date()
         didDeactivateDateStamp = interfaceControllerHelper.getCurrentDateStamp()
         
+        self.initialHealthKitStepCount = 0.0
+        self.initialHealthKitDistance  = 0.0
+        
         updateTheWatchDisplay(motionSteps:0, motionDistance:0.0)
         checkHealthKit(healthKitManager: healthKitManager)
     }
@@ -166,7 +169,7 @@ extension InterfaceController {
     
     // query HealthKit for updated values
     fileprivate func checkHealthKit (healthKitManager:HealthKitMgr) {
-        sendMessage(messageToSend:"checkHealthKit:")
+
         interfaceControllerHelper.checkHealthKitForStepCount(healthKitManager: healthKitManager) { (stepCount) -> Void in
             self.sendMessage(messageToSend:"checkHealthKitForStepCount: \(stepCount) steps.")
             self.initialHealthKitStepCount = stepCount
@@ -224,12 +227,8 @@ extension WatchSessionProtocol {
     // WCSession Delegate protocol
     func session(_ session: WCSession, didReceiveMessage message: [String : Any], replyHandler: @escaping ([String : Any]) -> Void) {
 //        let value = message["Message"] as? String        // Reply handler, received message
-        
         // do something with the received message...?
-        
-        // Send a reply
-        replyHandler(["Message":"Yes!\niOS 9.0 + WatchOS2 ..AAAAAAmazing!"])
-        
+        replyHandler(["Message":"A Messge"])        // Send a reply
     }
 }
 
@@ -237,13 +236,13 @@ extension WatchSessionProtocol {
 //MARK: - WatchSessionTasks -> InterfaceController
 typealias WatchSessionTasks = InterfaceController
 extension WatchSessionTasks {
-    
     // Method to send message to paired iOS App (Parent)
     func sendMessage(messageToSend:String) {
         print(messageToSend)    // print message to the console
         if sendMessagesToParentPhone == true {
-            // set sendMessagesToParentPhone to true to copy messages to the iPhone.
-            // companion iPhone app sends them to NSLogger on the Mac & a file in the Documents Directory, where you can grab it usint iTunes
+            
+            // set sendMessagesToParentPhone to true to copy messages to the parent app on the iPhone.
+            // companion iPhone app sends them to NSLogger on the Mac & a file in the Documents Directory, where you can grab it using iTunes
 
             let messageDict = ["Message":messageToSend]
             

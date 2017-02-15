@@ -40,11 +40,16 @@ struct HealthKitManager:HealthKitMgr {
                     return          //  Something went Wrong
                 }
                 if let myResults = results {
-                    myResults.enumerateStatistics(from: startDate as Date, to: endDate as Date) {
-                        statistics, stop in
-                        if let quantity = statistics.sumQuantity() {
-                            let quantityValue = quantity.doubleValue(for: quantityFor)
-                            completion(quantityValue)
+                    if myResults.statistics().count == 0 {
+                        completion(0.0)
+                    }
+                    else {
+                        myResults.enumerateStatistics(from: startDate as Date, to: endDate as Date) {
+                            statistics, stop in
+                            if let quantity = statistics.sumQuantity() {
+                                let quantityValue = quantity.doubleValue(for: quantityFor)
+                                completion(quantityValue)
+                            }
                         }
                     }
                 }
